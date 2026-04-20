@@ -1,0 +1,14 @@
+services:
+  # Base de datos PostgreSQL pura (sin TimescaleDB)
+  database:
+    image: postgres:14-alpine
+    container_name: postgres_puro
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=qwerty1234
+      - POSTGRES_DB=postgres
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data

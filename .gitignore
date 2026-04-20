@@ -1,0 +1,8 @@
+**/postgres_data/
+data/bronze/*.csv
+
+descarga.sql
+docker/descarga.sql
+
+__pycache__/
+*.pyc

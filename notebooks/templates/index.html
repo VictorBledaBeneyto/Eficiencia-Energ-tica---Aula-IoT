@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartHeat AI - Panel de Predicción</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent-color: #38bdf8;
+            --input-bg: #1e293b;
+            --text-main: #f8fafc;
+        }
+
+        body { 
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-color);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            margin-top: 10px;
+        }
+
+        .form-control, .form-select {
+            background-color: var(--input-bg);
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #26334d;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+            color: white;
+        }
+
+        label { 
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+            color: #94a3b8;
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
+        .prediction-result {
+            border-radius: 20px;
+            padding: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 6px solid;
+            display: none; /* Oculto por defecto */
+        }
+        
+        .alert-danger { border-left-color: #ef4444; color: #fca5a5; background: rgba(239, 68, 68, 0.1); }
+        .alert-success { border-left-color: #22c55e; color: #86efac; background: rgba(34, 197, 94, 0.1); }
+
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                
+                <div class="glass-card shadow-2xl">
+                    <div class="text-center mb-5">
+                        <h1 class="fw-bold mb-2" style="background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            SmartHeat AI
+                        </h1>
+                        <p class="text-secondary">Análisis Predictivo de Eficiencia Energética</p>
+                    </div>
+
+                    <div id="resultBox" class="prediction-result mb-5 animate__animated">
+                        <div class="d-flex align-items-center justify-content-center gap-3 text-center">
+                            <div>
+                                <h2 id="resultTitle" class="h4 mb-1 fw-bold"></h2>
+                                <p class="mb-0 opacity-75">Probabilidad de derroche: <strong id="resultProb"></strong></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="predictionForm" class="row g-4">
+                        
+                        <div class="col-12"><div class="section-title">Temporalidad</div></div>
+                        <div class="col-md-4">
+                            <label>Mes</label>
+                            <input type="number" name="mes" min="1" max="12" class="form-control" placeholder="1-12" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Día de la Semana</label>
+                            <input type="number" name="dia_semana" min="0" max="6" class="form-control" placeholder="0=Lun, 6=Dom" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Hora del Día</label>
+                            <input type="number" name="hora" min="0" max="23" class="form-control" placeholder="0-23" required>
+                        </div>
+
+                        <div class="col-12"><div class="section-title">Sensores Internos</div></div>
+                        <div class="col-md-4">
+                            <label>Temperatura Int. (°C)</label>
+                            <input type="number" step="any" name="temp" class="form-control" placeholder="Ej: 21.5" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Humedad Aula (%)</label>
+                            <input type="number" step="any" name="hum" class="form-control" placeholder="0-100" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Estado Calefacción</label>
+                            <select name="ce" class="form-select" required>
+                                <option value="0">⚪ Apagada</option>
+                                <option value="1">🔥 Encendida</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12"><div class="section-title">Condiciones Externas</div></div>
+                        <div class="col-md-4">
+                            <label>Vel. Viento (km/h)</label>
+                            <input type="number" step="any" name="viento_m" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Dir. Viento (0-360°)</label>
+                            <input type="number" step="any" name="viento_dir" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Nubosidad (%)</label>
+                            <input type="number" step="any" name="nubo" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label>Elevación Solar</label>
+                            <input type="number" step="any" name="sol_elev" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Azimut Solar</label>
+                            <input type="number" step="any" name="azimut" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Hum. Exterior (Mislata)</label>
+                            <input type="number" step="any" name="hum_m" class="form-control" required>
+                        </div>
+
+                        <div class="col-12"><div class="section-title">Derroche Actual</div></div>
+                        <div class="col-12">
+                            <label>Derroche Hora Actual</label>
+                            <select name="derroche_previo" class="form-select" required>
+                                <option value="0">✅ Sin derroche</option>
+                                <option value="1">⚠️ Alerta de Derroche Activa</option>
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-5">
+                            <button type="submit" id="submitBtn" class="btn btn-predict btn-lg w-100 text-white shadow">
+                                INICIAR PREDICCIÓN
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <p class="text-center mt-4 text-secondary" style="font-size: 0.8rem;">
+                    Gestión Domótica &copy; 2026
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const resultBox = document.getElementById('resultBox');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultProb = document.getElementById('resultProb');
+
+            // Visual feedback
+            btn.innerText = "CONSULTANDO IA...";
+            btn.disabled = true;
+
+            // Recoger datos
+            const formData = new FormData(this);
+            const rawData = Object.fromEntries(formData.entries());
+
+            // Preparar JSON para la API (Mapeo a nombres que usa tu Python)
+            const jsonData = {
+                "mes": parseFloat(rawData.mes),
+                "dia_de_la_semana": parseFloat(rawData.dia_semana),
+                "hora": parseFloat(rawData.hora),
+                "temperatura_media": parseFloat(rawData.temp),
+                "humedad_media": parseFloat(rawData.hum),
+                "sol_elevacion": parseFloat(rawData.sol_elev),
+                "sol_azimut": parseFloat(rawData.azimut),
+                "mislata_viento": parseFloat(rawData.viento_m),
+                "mislata_viento_dir": parseFloat(rawData.viento_dir),
+                "mislata_nubosidad": parseFloat(rawData.nubo),
+                "mislata_humedad": parseFloat(rawData.hum_m),
+                "CE": parseFloat(rawData.ce),
+                "derroche": parseFloat(rawData.derroche_previo)
+            };
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(jsonData)
+                });
+
+                const data = await response.json();
+                const p = data.prediccion;
+
+                // Lógica de visualización
+                resultBox.style.display = 'block';
+                resultProb.innerText = (p * 100).toFixed(2) + "%";
+                
+                if (p >= 0.5) {
+                    resultTitle.innerText = "ALERTA: SE PREVÉ DERROCHE";
+                    resultBox.className = "prediction-result mb-5 alert alert-danger animate__animated animate__headShake";
+                } else {
+                    resultTitle.innerText = "ESTADO EFICIENTE: SIN RIESGO";
+                    resultBox.className = "prediction-result mb-5 alert alert-success animate__animated animate__fadeIn";
+                }
+
+                // Scroll suave al resultado
+                resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor de IA.');
+            } finally {
+                btn.innerText = "INICIAR PREDICCIÓN DE RIESGO";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
