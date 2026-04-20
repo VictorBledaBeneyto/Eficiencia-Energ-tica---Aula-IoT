@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 import os
-
+ 
 user = "postgres"
 password = "qwerty1234"
 host = "localhost"
